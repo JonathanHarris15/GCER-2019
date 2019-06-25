@@ -113,9 +113,6 @@ void wakeup(){
     
     create_connect();
     enable_servos();
-    servo(2,0);
-    servo(1,1811);
-    servo(0,1719);
     
 }
 void sleep(){
@@ -128,7 +125,8 @@ void wait(int sleep){
    
     create_drive_direct(0,0);
     msleep(sleep/2);
-    motor(0,0);
+    motor(LEFT,0);
+    motor(RIGHT,0);
     msleep(sleep/2);
     
     
@@ -265,9 +263,7 @@ void calibrate_gyros(){
 
 void gyro_turn_PID_right(int target_theta){
     
-    
     calibrate_gyros();
-    
     theta = 0;
     error = 0;
     sum_error = 0;
@@ -279,14 +275,11 @@ void gyro_turn_PID_right(int target_theta){
     while(theta < target_theta - 1){
         
         error = target_theta - theta;
-        
         // P
         proportional = error * tkp;
-        
         //I
         sum_error = sum_error + error;
         integral = sum_error * tki;
-        
         //D
         derivative = (error - last_error) * tkp;
 
@@ -580,5 +573,265 @@ int colorSense(int color, int loops) {
         return 1;
     }
 
+}
+
+void demo_line_follow(int port, int target_speed, int dist){
+    
+    cmpc(RIGHT);
+    cmpc(LEFT);
+    slope = 0.01;
+    line_follow_kp = 0.018;
+    line_follow_ki = 0.1;
+    
+    while(((gmpc(RIGHT) + gmpc(LEFT))/2) < dist){
+        
+        line_follow_error = analog(port) - middle_value;
+        line_follow_error_sum += line_follow_error;
+        line_follow_p = line_follow_error * line_follow_kp;
+        line_follow_i = line_follow_error_sum * line_follow_ki;
+        
+        a_speed = -(line_follow_p + line_follow_ki) + target_speed;
+        b_speed = (line_follow_p + line_follow_ki) + target_speed;
+        
+        mav(RIGHT,-b_speed);
+        mav(LEFT,-a_speed);
+        console_clear();
+        
+        
+    }
+}
+
+void demo_gyro_turn_PID_right(int target_theta){
+    
+    calibrate_gyros();
+    theta = 0;
+    error = 0;
+    sum_error = 0;
+    last_error = 0;
+    tkp = 0.013;
+    tki = 0.00004;
+    tkd = 1500;
+    
+    while(theta < target_theta - 1){
+        
+        error = target_theta - theta;
+        // P
+        proportional = error * tkp;
+        //I
+        sum_error = sum_error + error;
+        integral = sum_error * tki;
+        //D
+        derivative = (error - last_error) * tkp;
+
+        tspeed = proportional + integral + derivative;
+        
+        mav(RIGHT,-tspeed);
+        mav(LEFT,tspeed);
+        
+        msleep(15);
+        
+        last_error = error;
+        
+        theta = theta + abs((gyro_z() - bias));
+        
+        
+    }
+    printf("My failure level was %d", target_theta - theta);
+}
+
+void demo_gyro_turn_PID_left(int target_theta){
+    
+    
+    calibrate_gyros();
+    
+    theta = 0;
+    error = 0;
+    sum_error = 0;
+    last_error = 0;
+    tkp = 0.013;
+    tki = 0.00004;
+    tkd = 1500;
+    
+    while(theta < target_theta){
+        
+        error = target_theta - theta;
+        
+        // P
+        proportional = error * tkp;
+        
+        //I
+        sum_error = sum_error + error;
+        integral = sum_error * tki;
+        
+        //D
+        derivative = (error - last_error) * tkp;
+
+        tspeed = proportional + integral + derivative;
+        
+        mav(RIGHT,tspeed);
+        mav(LEFT,-tspeed);
+        
+        msleep(15);
+        
+        last_error = error;
+        
+        theta = theta + abs((gyro_z() - bias));
+        printf("%d\n",theta);
+        
+    }
+    printf("My failure level was %d", target_theta - theta);
+}
+
+void demo_drive_PID(int dist,int speed){
+ 
+    cmpc(RIGHT);
+    cmpc(LEFT);
+    
+    calibrate_gyros();
+    
+    target_theta = 0;
+    //calculating the multipliers for both PID controllers 
+    	//proportional
+        tp = 0.002;
+        dp = 0;
+    	
+    	//integral
+        ti = 0.0002;
+        di = 0;
+    
+    	//derivative
+        td = 1;
+        dd = 0;
+    
+    while((gmpc(RIGHT) + gmpc(LEFT)/2) > -dist){
+        
+        //turn error calculation
+        turn_error = gyro_z() - bias;
+        turn_sum_error = turn_sum_error + turn_error;
+        
+        //turn proportional
+        turn_proportional = turn_error * tp;
+        
+        //turn integral
+        turn_integral = turn_sum_error * ti;
+        
+        //turn derivative 
+        turn_derivative = turn_last_error - turn_error;
+        
+        //last error calculation for the turn PID
+        turn_last_error = turn_error;
+        
+        //final turn PID calculation 
+        turn_speed = turn_proportional + turn_integral + turn_derivative;
+        
+        //final wheel speeds
+        speed_l = turn_speed + speed;
+        speed_r = -turn_speed + speed;
+        
+        //moving the wheels
+        mav(RIGHT,speed_r);
+        mav(LEFT,speed_l);
+      
+        
+    }
+    
+    
+}    
+            
+void demo_drive_PID_back(int dist,int speed){
+ 
+    cmpc(RIGHT);
+    cmpc(LEFT);
+    calibrate_gyros();
+    
+    target_theta = 0;
+    //calculating the multipliers for both PID controllers 
+    	//proportional
+        tp = 0.002;
+        dp = 0;
+    	
+    	//integral
+        ti = 0.0002;
+        di = 0;
+    
+    	//derivative
+        td = 1;
+        dd = 0;
+    
+    while(get_create_distance() < dist){
+        
+        //turn error calculation
+        turn_error = gyro_z() - bias;
+        turn_sum_error = turn_sum_error + turn_error;
+        
+        //turn proportional
+        turn_proportional = turn_error * tp;
+        
+        //turn integral
+        turn_integral = turn_sum_error * ti;
+        
+        //turn derivative 
+        turn_derivative = turn_last_error - turn_error;
+        
+        //last error calculation for the turn PID
+        turn_last_error = turn_error;
+        
+        //final turn PID calculation 
+        turn_speed = turn_proportional + turn_integral + turn_derivative;
+        
+        //final wheel speeds
+        speed_l = turn_speed + speed;
+        speed_r = -turn_speed + speed;
+        
+        //moving the wheels
+        mav(RIGHT,speed_r);
+        mav(LEFT,speed_l);
+      
+        
+    }
+    
+    
+}
+void demo_square_up(int speed){
+    
+    
+    int speeda;
+    int speedb;
+    calibrate_gyros();
+    
+    while(analog(1) > middle_value || analog(2) > middle_value){
+        
+        
+        theta = theta + (gyro_z() - bias);
+        
+        speeda = theta * 0.05;
+        speedb = theta * -0.05;
+        
+        if(analog(1) > middle_value){
+            
+            printf("l%d\n",analog(1));
+            squarelspeed = speeda + speed;
+            
+        }else{
+         
+            squarelspeed = 0;
+            
+        }
+        if(analog(2) > middle_value){
+         
+            printf("r%d\n",analog(2));
+            squarerspeed = speedb + speed;
+            
+        }else{
+            
+            squarerspeed = 0;
+            
+        }
+        mav(RIGHT,squarerspeed);
+        mav(LEFT,squarelspeed);
+        
+        msleep(15);
+    }
+    
 }
     
