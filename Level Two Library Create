@@ -1,0 +1,84 @@
+
+#include </home/root/Documents/KISS/GCER 2019/GCER meeple demon/include/library level one.h>
+
+void line_up_with_building(int speed, int port){
+    
+    while(getAnalogAverageDos(1,2,20) < tower_val){
+        create_line_follow(0,speed,1);
+        printf("%d\n",getAnalogAverageDos(1,2,20));
+    }
+    wait(5);
+        
+        
+    
+}
+
+void wakeup(){
+    
+    create_connect();
+    enable_servos();
+    servo(2,0);
+    servo(3,0);
+    servo(1,2047);
+    servo(0,1719);
+    wait(5);
+    motor(1,200);
+    msleep(400);
+    wait(5);
+    
+}
+
+void line_up_with_void(int speed, int port){
+    
+    while(getAnalogAverageDos(port,2,5) > tower_val){
+        create_line_follow(0,speed,1);
+        printf("%d \n",analog(port));
+    }
+    wait(1);
+    create_line_follow(0,50,10);
+    wait(1);
+   
+    
+}
+
+void grab_meeples(){
+    
+    servo(0,349);
+    wait(5);
+    servo(1,80);
+    wait(5);
+    motor(0,100);
+    msleep(2000);
+    wait(5);
+    slow_servo(600,1,1);              
+    wait(5);
+    slow_servo(874,1,0); //top claw
+    wait(1);
+    motor(0,-40);
+    msleep(5000);
+    wait(5);
+    slow_servo(1500,1,1);
+    wait(5);
+    servo(0,939);
+    wait(5);
+    slow_servo(600,0,1);
+    
+    
+}
+
+void callibrate_dist(int port1,int port2){
+    
+    printf("place the distance sensor on the edge of the tower and press the button \n");
+    wait_for_button_input();
+    tower_val = getAnalogAverageDos(port1,port2,50);
+    printf("your value was: %f\n",tower_val);
+    msleep(500);
+    printf("place the sensor out in the open and press the button");
+    wait_for_button_input();
+    tower_val = (tower_val + getAnalogAverageDos(port1,port2,50)) / 2;
+    printf("your value was: %f\n",tower_val);
+    wait(2000);
+    console_clear();
+    
+    
+}
