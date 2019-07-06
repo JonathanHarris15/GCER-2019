@@ -1,0 +1,176 @@
+#include <kipr/botball.h>
+#include </home/root/Documents/KISS/GCER 2019/GCER meeple demon/include/library level two.h>
+
+int w = 2;
+int ninty = 33000;
+
+int main()
+{
+    
+    
+    wakeup();
+    
+    callibrate_dist(1,2);
+    
+    callibrate_blacknwhite(0);
+    
+    wait_for_light(5);
+    
+    shut_down_in(120);
+    
+    create_square_up(100);
+    
+    wait(w);
+    
+    create_drive_PID_back(50,100);
+    
+    wait(w);
+    
+    create_square_up(200);
+    
+    wait(w);
+    
+    servo(0,0);
+    
+    wait(w);
+    
+    create_drive_PID_back(200,100);//fully in corner
+    
+    wait(w);
+    
+    servo(2,1318);
+    
+    gyro_turn_PID_right(ninty - 2000);//turn to line 
+    
+    wait(w);
+    
+    create_drive_PID(475,300);//move to line
+    
+    wait(w);
+    
+    servo(3,2047);
+    
+    wait(w);
+    
+    create_square_up_back(100);
+    
+    wait(w);
+    
+    create_drive_PID_back(25,100);//fully in corner
+    
+    wait(w);
+   
+    gyro_turn_PID_left(ninty - 2000);//lined up ************************************************
+    
+    wait(w);
+    
+    wait(w);
+    
+    servo(0,1000);
+    
+    wait(w);
+    
+    line_up_with_building(75,1);//line up
+    
+    wait(w);
+    
+    create_drive_PID_back(90,100);//first back up
+    
+    wait(w);
+    
+    wait(w);
+    
+    servo(0,939);//setup
+    
+    servo(1,800);
+    
+    wait(w);
+    
+    grab_meeples();
+    
+    wait(w);
+    
+    create_line_follow(0,100,300);
+    
+    wait(w);
+    
+    line_up_with_void(60,1);
+    
+    wait(w);
+    
+    grab_meeples();
+    
+    wait(w);
+    
+    create_line_follow(0,60,100);
+    
+    wait(w);
+    
+    line_up_with_void(60,1);
+    
+    wait(w);
+    
+    grab_meeples();//bump tower
+    
+    wait(w);
+    
+    create_line_follow(0,15,100);
+    
+    wait(w);
+    
+    line_up_with_void(60,1); 
+    
+    wait(w);
+    
+    grab_meeples();
+    
+    wait(w);
+    
+    create_line_follow(0,25,200);
+    
+    wait(w);
+    
+    //INTO THE BUILDING
+    if(colorSense(0,50) == 1){
+        
+        servo(1,1810);
+        servo(2,2047);
+        servo(0,0);
+        
+        wait(w);
+        
+        gyro_turn_PID_left(4500);
+        
+        wait(w);
+        
+        create_drive_PID(300,250);
+        
+        wait(w);
+        
+        gyro_turn_PID_right(5500);
+        
+        wait(w);
+        
+        create_drive_PID(100,250);
+        
+    }else{
+        
+        servo(1,1148);
+        servo(2,2047);
+        servo(0,0);
+        
+        wait(w);
+       
+        gyro_turn_PID_right(8800);
+        
+        wait(w);
+        
+        create_drive_PID(400,200);
+        
+        
+    }
+    
+    
+    disable_servos();
+    return 0;
+}
